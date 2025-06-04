@@ -1,7 +1,6 @@
 <?php
 include '../database/db.php';
-// Inclusion unique pour éviter la redéclaration de la classe
-require_once '../database/partner_request.php';
+include '../database/partner_request.php';
 ?>
 <!DOCTYPE html>
 <html lang="fr">

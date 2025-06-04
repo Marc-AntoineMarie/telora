@@ -367,8 +367,6 @@ $idclient = $clientsId;
                         echo 'selected'; ?>>50</option>
                     <option value="100" <?php if ($perPage == 100)
                         echo 'selected'; ?>>100</option>
-                    <option value="1000" <?php if ($perPage == 1000)
-                        echo 'selected'; ?>>1000</option>
                 </select>
             </div>
         </div>

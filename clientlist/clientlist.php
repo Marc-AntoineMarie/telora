@@ -1,33 +1,61 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 /**
- * Listes des clients partenaire
- *
- * Cette page affiche :
- * - La liste des clients associés à un partenaire
- * - Des liens vers les détails de chaque client
- * - Des options de gestion des clients en fonction des rôles utilisateur
+ * Partner's client list
  * 
- * Fonctionnalités principales :
- * - Filtrage des clients par partenaire
- * - Gestion des droits d'accès (Admin/Partenaire)
- * - Maintien du contexte de navigation
- * - Mise à jour des identifiants de session
- **/
+ * This page displays:
+ * - The list of clients associated with a partner
+ * - Links to each client's details
+ * - Client management options based on user roles
+ * 
+ * Main features:
+ * - Filtering clients by partner
+ * - Access rights management (Admin/Partner)
+ * - Maintaining navigation context
+ * - Updating session IDs
+ */
+
 require_once '../database/db.php';
-require_once '../database/session_verify.php';
-require_once '../database/partner_request.php';
-require_once '../database/clients_request.php';
-require_once '../database/partner_context.php';
 
-// Détermination sécurisée et centralisée de l'id partenaire
-$partnerId = getCurrentPartnerId();
-$idpartenaire = $partnerId;
+include '../database/partner_request.php';
+include '../database/clients_request.php';
+///////////////////// Access rights gestionnary ///////////////////
+session_start();
 
-if ($partnerId === null) {
+// Authentication verification
+if (!isset($_SESSION['role']) || ($_SESSION['role'] !== 'Admin' && $_SESSION['role'] !== 'Partenaire')) {
+    header('Location: ../login/login.php');
+    exit;
+}
+
+// Retrieving the partner ID
+$partnerId = null;
+if (isset($_GET['idpartenaires'])) {
+    $partnerId = intval($_GET['idpartenaires']);
+    $_SESSION['partner_id'] = $partnerId;
+    error_log("[clientlist.php] Updated partner_id in session from GET: " . $partnerId);
+} elseif (isset($_SESSION['partner_id'])) {
+    $partnerId = $_SESSION['partner_id'];
+    error_log("[clientlist.php] Using partner_id from session: " . $partnerId);
+} else {
     error_log("[clientlist.php] No partner_id found");
 }
 
-// Si besoin, tu peux garder la logique POST pour les formulaires d'ajout
+// Access rights verification
+if ($_SESSION['role'] === 'Partenaire' && $_SESSION['partner_id'] !== $partnerId) {
+    header('Location: ../login/login.php');
+    exit;
+}
+
+///////////////////// END Access rights verification ///////////////////
+//Temporaire pour le développement :
+if (isset($_GET['idpartenaires']))
+    $idpartenaire = $_GET['idpartenaires'];
+else
+    $idpartenaire = 2;
+
 if (isset($_POST['idpartenaire']))
     $idpartenaire = $_POST['idpartenaire'];
 

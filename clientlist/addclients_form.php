@@ -36,11 +36,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 ?>
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un Client</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="addclient_modal.css">
     <script>
         // Script pour changer dynamiquement l'URL en fonction de la plateforme
         function updatePlatformURL() {
@@ -67,8 +69,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 </head>
+
 <body>
-    <div class="container mt-5">
+    <div class="container mt-5 modal-addclient">
         <div class="card">
             <div class="card-header text-center bg-primary text-white">
                 <h3>Ajouter un Client chez <?= htmlspecialchars($partnerName) ?></h3>
@@ -82,34 +85,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <!-- Nom -->
                     <div class="mb-3">
                         <label for="nom" class="form-label">Nom <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="nom" name="Nom" placeholder="Entrez le nom" required>
+                        <input type="text" class="form-control" id="nom" name="Nom" placeholder="Entrez le nom"
+                            required>
                         <div class="invalid-feedback">Le nom est obligatoire.</div>
                     </div>
 
                     <!-- Email -->
                     <div class="mb-3">
                         <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="email" name="Email" placeholder="Entrez l'email" required>
+                        <input type="email" class="form-control" id="email" name="Email" placeholder="Entrez l'email"
+                            required>
                         <div class="invalid-feedback">Un email valide est obligatoire.</div>
                     </div>
 
                     <!-- Téléphone -->
                     <div class="mb-3">
                         <label for="telephone" class="form-label">Téléphone <span class="text-danger">*</span></label>
-                        <input type="number" class="form-control" id="telephone" name="Telephone" placeholder="Entrez le numéro de téléphone" required>
+                        <input type="number" class="form-control" id="telephone" name="Telephone"
+                            placeholder="Entrez le numéro de téléphone" required>
                         <div class="invalid-feedback">Le téléphone est obligatoire.</div>
                     </div>
 
                     <!-- Adresse (facultatif) -->
                     <div class="mb-3">
                         <label for="adresse" class="form-label">Adresse</label>
-                        <textarea class="form-control" id="adresse" name="Adresse" placeholder="Entrez l'adresse (facultatif)" rows="3"></textarea>
+                        <textarea class="form-control" id="adresse" name="Adresse"
+                            placeholder="Entrez l'adresse (facultatif)" rows="3"></textarea>
                     </div>
 
                     <!-- Plateforme -->
                     <div class="mb-3">
                         <label for="plateforme" class="form-label">Plateforme <span class="text-danger">*</span></label>
-                        <select class="form-select" id="plateforme" name="Plateforme" onchange="updatePlatformURL()" required>
+                        <select class="form-select" id="plateforme" name="Plateforme" onchange="updatePlatformURL()"
+                            required>
                             <option value="">Choisir une plateforme...</option>
                             <option value="Wazo">Wazo</option>
                             <option value="OVH">OVH</option>
@@ -146,4 +154,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

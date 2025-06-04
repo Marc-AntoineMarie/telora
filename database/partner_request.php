@@ -1,39 +1,34 @@
-<?php
+<?php 
 
 // Gestion des partenaires
-class ShowPartnerForm
-{
+class ShowPartnerForm {
 
     private $pdo;
     private $PartnerRecoverySQLRequest = "SELECT * FROM Partenaires";
     private $PartnerRecoveryByIdSQLRequest = "SELECT * FROM Partenaires WHERE idpartenaires = [0] ";
 
     // Constructeur pour initialiser la connexion PDO
-    function __construct($pdo)
-    {
+    function __construct($pdo) {
         $this->pdo = $pdo;
     }
 
     // Récupération de tous les partenaires
-    function PartnerRecovery()
-    {
+    function PartnerRecovery() {
         $stmt = $this->pdo->prepare($this->PartnerRecoverySQLRequest);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
-    // Récupération d'un partenaire par son id
-    function PartnerRecoveryById($idpartenaire)
-    {
-        $sqlrequest = str_replace("[0]", $idpartenaire, $this->PartnerRecoveryByIdSQLRequest);
+    
+     // Récupération d'un partenaire par son id
+    function PartnerRecoveryById($idpartenaire) {
+				$sqlrequest = str_replace("[0]", $idpartenaire,$this->PartnerRecoveryByIdSQLRequest);
         $stmt = $this->pdo->prepare($sqlrequest);
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
-
+    
     // Ajouter un partenaire à partir d'un formulaire
-    function addPartnerRecovery($nom, $email, $telephone, $adresse)
-    {
+    function addPartnerRecovery($nom, $email, $telephone, $adresse) {
         // Préparer la requête SQL
         $sql_Partner = "INSERT INTO Partenaires (Nom, Email, Telephone, Adresse)
                         VALUES (:Nom, :Email, :Telephone, :Adresse)";
@@ -62,28 +57,22 @@ class ShowPartnerForm
     }
 
     // Traitement du formulaire d'ajout de partenaire
-    function processPartnerForm($formData)
-    {
+    function processPartnerForm($formData) {
         // Validation des données
         $nom = htmlspecialchars($formData['Nom']);
         $email = htmlspecialchars($formData['Email']);
         $telephone = intval(preg_replace('/\D/', '', $formData['Telephone']));
         $adresse = htmlspecialchars($formData['Adresse'] ?? '');
 
-        if (empty($nom)) {
-            return "Veuillez remplir le champ 'nom'.";
-        } elseif (empty($email)) {
-            return "Veuillez remplir le champ 'email'.";
-        } elseif (empty($telephone)) {
-            return "Veuillez remplir le champ 'telephone'.";
+        if (empty($nom) || empty($email) || empty($telephone)) {
+            return "Veuillez remplir tous les champs obligatoires.";
         }
-        ;
 
         // Ajouter le partenaire
         return $this->addPartnerRecovery($nom, $email, $telephone, $adresse);
-
+        
     }
-
+    
 }
 
 // Instance de la class ShowPartnerForm

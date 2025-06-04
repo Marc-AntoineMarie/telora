@@ -14,12 +14,42 @@
  * - Les messages d'erreur et de succès
  * - Le retour à l'annuaire après soumission
  */
-// Vérification de l'appartenance du client au partenaire
-$stmt = $pdo->prepare("SELECT idclients FROM Clients WHERE idclients = ? AND partenaires_idpartenaires = ?");
-$stmt->execute([$clientsId, $_SESSION['partner_id']]);
-if (!$stmt->fetch()) {
+
+// Démarrage de la session
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Vérification de l'authentification
+if (!isset($_SESSION['role'])) {
     header('Location: ../login/login.php');
     exit;
+}
+
+// Récupération des informations de session
+$role = $_SESSION['role'];
+$partnerId = $_SESSION['partner_id'] ?? null;
+$clientsId = isset($_GET['idclients']) ? intval($_GET['idclients']) : null;
+
+// Vérification des droits d'accès
+if ($role === 'Admin') {
+    if (!$clientsId) {
+        header('Location: ../admin/V1_admin.php');
+        exit;
+    }
+} elseif ($role === 'Partenaire') {
+    if (!$clientsId) {
+        header('Location: ../clientlist/clientlist.php');
+        exit;
+    }
+    
+    // Vérification de l'appartenance du client au partenaire
+    $stmt = $pdo->prepare("SELECT idclients FROM Clients WHERE idclients = ? AND partenaires_idpartenaires = ?");
+    $stmt->execute([$clientsId, $_SESSION['partner_id']]);
+    if (!$stmt->fetch()) {
+        header('Location: ../login/login.php');
+        exit;
+    }
 } elseif ($role === 'Client') {
     if ($clientsId != $_SESSION['client_id']) {
         header('Location: ../login/login.php');
@@ -29,16 +59,18 @@ if (!$stmt->fetch()) {
 
 // Inclusion des dépendances nécessaires pour le formulaire
 require_once '../database/db.php';
-require_once '../database/session.php';
 require_once '../database/Annuaire_request.php';
 require_once '../ldap/handlers/ContactHandler.php';
 
 ///////////////////// vérif des rôles ///////////////////
 ///////////////////// FIN vérif des rôles ///////////////////
 
-// Récupérer l'ID du client depuis la session (sécurisé)
-$clientId = $_SESSION['client_id'];
+// Récupérer l'ID du client depuis l'URL
+$clientId = isset($_GET['idclients']) ? (int)$_GET['idclients'] : null;
 
+if (!$clientId) {
+    die("Erreur : ID client manquant");
+}
 
 // Initialisation du gestionnaire d'annuaire
 $annuaireManager = new AnnuaireManager($pdo);
@@ -60,14 +92,12 @@ $success = isset($_GET['success']) ? $_GET['success'] : null;
 ?>
 <!DOCTYPE html>
 <html lang="fr">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un Contact - <?= $clientName ?></title>
     <link rel="stylesheet" href="annuaire.css">
 </head>
-
 <body class="edit-form">
     <div class="container">
         <div class="content">
@@ -134,7 +164,6 @@ $success = isset($_GET['success']) ? $_GET['success'] : null;
         </div>
     </div>
 </body>
-
 </html>
 
 <?php
@@ -145,13 +174,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $Telephone = $_POST['Telephone'] ?? '';
     $idclients = $_POST['idclients'] ?? null;
     $idpartenaires = $_POST['idpartenaires'] ?? null;
-
+    
     // Validation des données
     if (!empty($Nom) && !empty($Prenom) && !empty($Telephone) && $idclients && $idpartenaires) {
         try {
             // Ajout dans la base de données MySQL
             $result = addContact($pdo, $Nom, $Prenom, $Telephone, $idclients);
-
+            
             if ($result) {
                 // Synchronisation avec LDAP
                 $contact = [
@@ -159,9 +188,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'prenom' => $Prenom,
                     'telephone' => $Telephone
                 ];
-
+                
                 $ldapResult = $ldapHandler->syncContact($idpartenaires, $idclients, $contact);
-
+                
                 if ($ldapResult !== false) {
                     $_SESSION['message'] = "Contact ajouté avec succès (MySQL + LDAP)";
                 } else {
@@ -178,7 +207,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $_SESSION['message'] = "Tous les champs sont obligatoires";
     }
-
+    
     // Redirection vers l'annuaire
     header("Location: annuaire.php?idclients=" . $idclients);
     exit;

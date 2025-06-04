@@ -13,7 +13,7 @@
  * - Gestion sécurisée des mots de passe
  */
 
-require_once __DIR__ . '/session.php';
+session_start();
 require_once '../database/db.php';
 
 /**
@@ -24,8 +24,7 @@ require_once '../database/db.php';
  * - Gère les sessions utilisateur
  * - Récupère les informations de connexion
  */
-class UserLogin
-{
+class UserLogin {
     private $pdo;
 
     /**
@@ -33,8 +32,7 @@ class UserLogin
      * 
      * @param PDO $pdo Instance de connexion à la base de données
      */
-    public function __construct($pdo)
-    {
+    public function __construct($pdo) {
         $this->pdo = $pdo;
     }
 
@@ -50,12 +48,11 @@ class UserLogin
      * - Compare les mots de passe de manière sécurisée
      * - Retourne les informations nécessaires à la session
      */
-    public function login($login, $password)
-    {
+    public function login($login, $password) {
         if (empty($login) || empty($password)) {
             return "Veuillez remplir tous les champs.";
         }
-
+    
         try {
             // Récupérer les informations de l'utilisateur
             $stmt = $this->pdo->prepare("SELECT * FROM Roles WHERE Login = :login");
@@ -66,7 +63,7 @@ class UserLogin
             if (!$user) {
                 return "Identifiants incorrects.";
             }
-
+    
             if ($user && password_verify($password, $user['MDP'])) {
                 // Stocker les informations utilisateur dans la session
                 $_SESSION['user_id'] = $user['idRole'];
@@ -96,15 +93,14 @@ class UserLogin
      * - Permet l'attribution des droits appropriés
      * - Gère la navigation selon le rôle
      */
-    private function redirectBasedOnRole($role, $user)
-    {
+    private function redirectBasedOnRole($role, $user) {
         switch ($role) {
             case 'Admin':
                 header('Location: ../admin/V1_admin.php');
                 exit;
             case 'Partenaire':
                 if (!empty($user['partenaires_idpartenaires'])) {
-                    header('Location: ../clientlist/clientlist.php');
+                    header('Location: ../clientlist/clientlist.php?idpartenaires=' . $user['partenaires_idpartenaires']);
                     exit;
                 } else {
                     return "Aucun partenaire associé à cet utilisateur.";
